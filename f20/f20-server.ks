@@ -53,6 +53,7 @@ deltarpm
 yum-plugin-fastestmirror
 realmd
 net-tools
+-dracut-config-rescue
 %end
 
 # Add in an old-style menu.lst to make XenServer's pygrub happy
