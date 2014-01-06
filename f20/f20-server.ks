@@ -46,14 +46,16 @@ halt
 
 # Minimal package set
 %packages --excludedocs
+@standard
 man
-man-pages
 vim
 deltarpm
 yum-plugin-fastestmirror
 realmd
 net-tools
 -dracut-config-rescue
+-fprintd-pam
+-wireless-tools
 %end
 
 # Add in an old-style menu.lst to make XenServer's pygrub happy
