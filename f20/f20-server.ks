@@ -14,8 +14,8 @@ keyboard us
 # for STATIC IP: uncomment and configure
 # network --onboot=yes --device=eth0 --bootproto=static --ip=192.168.###.### --netmask=255.255.255.0 --gateway=192.168.###.### --nameserver=###.###.###.### --noipv6 --hostname=$$$
 
-# for DHCP: uncomment
-# network --bootproto=dhcp --device=eth0 --onboot=on
+# for DHCP:
+network --bootproto=dhcp --device=eth0 --onboot=on
 
 firewall --disabled
 
@@ -38,7 +38,7 @@ text
 zerombr
 clearpart --all --drives=xvda
 part / --fstype=ext3 --grow --size=1024 --asprimary
-bootloader --location=none --timeout=5 --driveorder=xvda --append="console=hvc0"
+bootloader --location=partition --timeout=5 --driveorder=xvda --append="console=hvc0"
 
 # Shutdown when the kickstart is done
 halt
@@ -51,10 +51,10 @@ vim
 deltarpm
 yum-plugin-fastestmirror
 realmd
--grub2
 %end
 
 # Add in an old-style menu.lst to make XenServer's pygrub happy
+# and disable the GRUB2 configuration file
 %post
 mkdir /boot/grub
 KERNELSTRING=`rpm -q kernel --queryformat='%{VERSION}-%{RELEASE}.%{ARCH}\n' | tail -n 1`
@@ -68,4 +68,5 @@ title Fedora (${KERNELSTRING})
 	initrd /boot/initramfs-${KERNELSTRING}.img
 EOF
 
+mv /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
 %end
