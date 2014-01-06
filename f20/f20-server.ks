@@ -38,7 +38,7 @@ text
 zerombr
 clearpart --all --drives=xvda
 part / --fstype=ext3 --grow --size=1024 --asprimary
-bootloader --location=mbr --timeout=5 --driveorder=xvda --append="console=hvc0"
+bootloader --location=none --timeout=5 --driveorder=xvda --append="console=hvc0"
 
 # Shutdown when the kickstart is done
 halt
@@ -51,12 +51,14 @@ vim
 deltarpm
 yum-plugin-fastestmirror
 realmd
+-grub2
 %end
 
 # Add in an old-style menu.lst to make XenServer's pygrub happy
 %post
-KERNELSTRING=`rpm -q kernel --queryformat='%{VERSION}-%{RELEASE}.%{ARCH}\n' | tail -n 1`
 mkdir /boot/grub
+KERNELSTRING=`rpm -q kernel --queryformat='%{VERSION}-%{RELEASE}.%{ARCH}\n' | tail -n 1`
+
 cat > /boot/grub/menu.lst <<EOF
 default=0
 timeout=5
