@@ -51,6 +51,7 @@ vim
 deltarpm
 yum-plugin-fastestmirror
 realmd
+net-tools
 %end
 
 # Add in an old-style menu.lst to make XenServer's pygrub happy
