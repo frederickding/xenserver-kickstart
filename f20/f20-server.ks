@@ -33,7 +33,7 @@ rootpw Asdfqwerty
 authconfig --enableshadow --passalgo=sha512
 
 # SELinux enabled
-selinux --enabled
+selinux --enforcing
 
 # Disable anything graphical
 skipx
