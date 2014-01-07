@@ -1,5 +1,5 @@
 # Fedora 20 Server kickstart for XenServer
-# branch: develop
+# branch: release/0.1
 ##########################################
 
 # Install, not upgrade

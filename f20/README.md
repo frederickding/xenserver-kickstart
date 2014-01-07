@@ -1,6 +1,8 @@
 Fedora 20 XenServer kickstart files
 ===================================
 
+**release/0.1**
+
 ## Howto
 
 1. Create a new VM in XenCenter using the RHEL 6.0 template. Select 32-bit or 64-bit per your preferences, although these days there are few reasons not to use 64-bit. (Hypothetically, the CentOS 6.0 templates should work too.)
