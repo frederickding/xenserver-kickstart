@@ -1,3 +1,7 @@
+# Fedora 20 Server kickstart for XenServer
+# branch: master (version 0.1)
+##########################################
+
 # Install, not upgrade
 install
 
@@ -23,12 +27,13 @@ firewall --disabled
 timezone --utc Etc/UTC
 
 # Authentication
-# use a SHA512crypted password; default here is 'Asdfqwerty'
-rootpw --iscrypted $6$9dC4m770Q1o$FCOvPxuqc1B22HM21M5WuUfhkiQntzMuAV7MY0qfVcvhwNQ2L86PcnDWfjDd12IFxWtRiTuvO/niB0Q3Xpf2I.
+rootpw Asdfqwerty
+# if you want to preset the root password in a public kickstart file, use SHA512crypt e.g.
+# rootpw --iscrypted $6$9dC4m770Q1o$FCOvPxuqc1B22HM21M5WuUfhkiQntzMuAV7MY0qfVcvhwNQ2L86PcnDWfjDd12IFxWtRiTuvO/niB0Q3Xpf2I.
 authconfig --enableshadow --passalgo=sha512
 
-# SELinux
-selinux --disabled
+# SELinux enabled
+selinux --enforcing
 
 # Disable anything graphical
 skipx
@@ -45,29 +50,24 @@ halt
 
 # Minimal package set
 %packages --excludedocs
+@standard
 man
-man-pages
 vim
 deltarpm
 yum-plugin-fastestmirror
 realmd
 net-tools
+-dracut-config-rescue
+-fprintd-pam
+-wireless-tools
 %end
 
-# Add in an old-style menu.lst to make XenServer's pygrub happy
-# and disable the GRUB2 configuration file
+# Copy grub.cfg to a backup and then make adaptations for buggy pygrub
 %post
-mkdir /boot/grub
-KERNELSTRING=`rpm -q kernel --queryformat='%{VERSION}-%{RELEASE}.%{ARCH}\n' | tail -n 1`
-
-cat > /boot/grub/menu.lst <<EOF
-default=0
-timeout=5
-title Fedora (${KERNELSTRING})
-	root (hd0,1)
-	kernel /boot/vmlinuz-${KERNELSTRING} ro root=/dev/xvda1 console=hvc0 quiet
-	initrd /boot/initramfs-${KERNELSTRING}.img
-EOF
-
-mv /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
+cp /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
+cp /etc/default/grub /etc/default/grub.bak
+cp --no-preserve=mode /etc/grub.d/00_header /etc/grub.d/00_header.bak
+sed -i 's/GRUB_DEFAULT=saved/GRUB_DEFAULT=0/' /etc/default/grub
+sed -i 's/default="\\${next_entry}"/default="0"/' /etc/grub.d/00_header
+grub2-mkconfig -o /boot/grub2/grub.cfg
 %end
