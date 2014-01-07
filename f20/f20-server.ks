@@ -62,21 +62,12 @@ net-tools
 -wireless-tools
 %end
 
-# Add in an old-style menu.lst to make XenServer's pygrub happy
-# and disable the GRUB2 configuration file
+# Copy grub.cfg to a backup and then make adaptations for buggy pygrub
 %post
-mkdir /boot/grub
-KERNELSTRING=`rpm -q kernel --queryformat='%{VERSION}-%{RELEASE}.%{ARCH}\n' | tail -n 1`
-
-cat > /boot/grub/grub.conf <<EOF
-default=0
-timeout=5
-title Fedora (${KERNELSTRING})
-	root (hd0,1)
-	kernel /boot/vmlinuz-${KERNELSTRING} ro root=/dev/xvda1 console=hvc0 quiet
-	initrd /boot/initramfs-${KERNELSTRING}.img
-EOF
-ln -s /boot/grub/grub.conf /boot/grub/menu.lst
-ln -s /boot/grub/grub.conf /etc/grub.conf
-mv /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
+cp /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
+cp /etc/default/grub /etc/default/grub.bak
+cp --no-preserve=mode /etc/grub.d/00_header /etc/grub.d/00_header.bak
+sed -i 's/GRUB_DEFAULT=saved/GRUB_DEFAULT=0/' /etc/default/grub
+sed -i 's/default="\\${next_entry}"/default="0"/' /etc/grub.d/00_header
+grub2-mkconfig -o /boot/grub2/grub.cfg
 %end
