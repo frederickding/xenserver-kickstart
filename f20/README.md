@@ -1,6 +1,13 @@
 Fedora 20 XenServer kickstart files
 ===================================
 
+## Grub2 feature branch
+This branch tracks development intended to make the kickstart compatible with 
+automatically-generated `grub.cfg` files, instead of using a fake `menu.lst`.
+
+Such development would improve robustness by permitting automated `grub.cfg` 
+generation when the kernel is updated.
+
 ## Howto
 
 1. Create a new VM in XenCenter using the RHEL 6.0 template. Select 32-bit or 64-bit per your preferences, although these days there are few reasons not to use 64-bit. (Hypothetically, the CentOS 6.0 templates should work too.)
