@@ -64,7 +64,7 @@ net-tools
 mkdir /boot/grub
 KERNELSTRING=`rpm -q kernel --queryformat='%{VERSION}-%{RELEASE}.%{ARCH}\n' | tail -n 1`
 
-cat > /boot/grub/menu.lst <<EOF
+cat > /boot/grub/grub.conf <<EOF
 default=0
 timeout=5
 title Fedora (${KERNELSTRING})
@@ -72,6 +72,7 @@ title Fedora (${KERNELSTRING})
 	kernel /boot/vmlinuz-${KERNELSTRING} ro root=/dev/xvda1 console=hvc0 quiet
 	initrd /boot/initramfs-${KERNELSTRING}.img
 EOF
-
+ln -s /boot/grub/grub.conf /boot/grub/menu.lst
+ln -s /boot/grub/grub.conf /etc/grub.conf
 mv /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
 %end
