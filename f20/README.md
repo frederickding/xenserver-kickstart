@@ -13,3 +13,12 @@ console=hvc0 utf8 nogpt noipv6 ks=https://raw.github.com/frederickding/xenserver
 4. Give the new machine **at least 1024 MB of RAM**; Anaconda complains if you give it less than something like 924 MB while trying to install without a swap partition. You should be able to decrease this safely after install if you have to. Alternatively, customize the kickstart to assign a swap partition *(untested)*.
 5. Use your own settings for vCPUs, storage repository, and networking, ensuring that the VM has at least one functioning network adapter.
 6. Finish the wizard and let XenServer boot the VM automatically.
+
+## Changelog
+### 2013-01-07: GRUB2 support
+This kickstart file includes a script that fixes GRUB2 configuration files so 
+that automatically-generated `grub.cfg` files work with unpatched pygrub, 
+instead of generating a fake `menu.lst`.
+
+This improves robustness of the fix by permitting automated `grub.cfg` 
+generation when the kernel is updated.
