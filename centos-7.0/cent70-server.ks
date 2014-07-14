@@ -43,6 +43,7 @@ eula --agreed
 # Setup the disk
 zerombr
 clearpart --all --drives=xvda
+part /boot --fstype=ext3 --size=500 --asprimary
 part / --fstype=ext4 --grow --size=1024 --asprimary
 bootloader --timeout=5 --driveorder=xvda --append="console=hvc0"
 
