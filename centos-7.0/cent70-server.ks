@@ -5,9 +5,6 @@
 # Install, not upgrade
 install
 
-# For development, take screenshots of steps
-autostep --autoscreenshot
-
 # Install from a friendly mirror and add updates
 url --url http://mirrors.mit.edu/centos/7.0.1406/os/x86_64/
 repo --name=centos-updates --mirrorlist=http://mirrorlist.centos.org/?release=7.0.1406&arch=x86_64&repo=updates
@@ -47,20 +44,17 @@ eula --agreed
 zerombr
 clearpart --all --drives=xvda
 part / --fstype=ext4 --grow --size=1024 --asprimary
-bootloader --location=partition --timeout=5 --driveorder=xvda --append="console=hvc0"
+bootloader --timeout=5 --driveorder=xvda --append="console=hvc0"
 
 # Shutdown when the kickstart is done
 halt
 
 # Minimal package set
 %packages --excludedocs
-@server-platform
+@base
 @network-file-system-client
-man
-vim
 deltarpm
 yum-plugin-fastestmirror
-net-tools
 -dracut-config-rescue
 -fprintd-pam
 -wireless-tools
