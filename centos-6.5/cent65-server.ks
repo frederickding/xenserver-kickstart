@@ -7,7 +7,7 @@ install
 
 # Install from a friendly mirror and add updates
 url --url http://mirrors.mit.edu/centos/6.5/os/x86_64/
-repo --name=centos-updates --mirrorlist=http://mirrorlist.centos.org/?release=6.5&arch=$basearch&repo=updates
+repo --name=centos-updates --mirrorlist=http://mirrorlist.centos.org/?release=6.5&arch=x86_64&repo=updates
 
 # Language and keyboard setup
 lang en_US.UTF-8
