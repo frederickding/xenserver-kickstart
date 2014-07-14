@@ -6,7 +6,7 @@
 install
 
 # Install from a friendly mirror and add updates
-url --url http://mirrors.mit.edu/centos/7.0.1406/os/x86_64/
+url --url http://mirror.rackspace.com/CentOS/7.0.1406/os/x86_64/
 repo --name=centos-updates --mirrorlist=http://mirrorlist.centos.org/?release=7.0.1406&arch=x86_64&repo=updates
 
 # Language and keyboard setup
