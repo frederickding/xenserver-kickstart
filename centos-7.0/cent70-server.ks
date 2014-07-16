@@ -59,11 +59,14 @@ halt
 @network-file-system-client
 deltarpm
 yum-plugin-fastestmirror
+dracut-config-generic
 -dracut-config-rescue
+-plymouth
 -fprintd-pam
 -wireless-tools
 -NetworkManager
 -linux-firmware
+-*-firmware
 %end
 
 %post --log=/root/ks-post.log
