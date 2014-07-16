@@ -65,7 +65,7 @@ dracut-config-generic
 -fprintd-pam
 -wireless-tools
 -NetworkManager
--linux-firmware
+-NetworkManager-tui
 -*-firmware
 %end
 
@@ -107,6 +107,11 @@ echo .
 echo -n "Utility scripts"
 wget -O /opt/domu-hostname.sh https://github.com/frederickding/xenserver-kickstart/raw/develop/opt/domu-hostname.sh
 chmod +x /opt/domu-hostname.sh
+echo .
+
+# remove unnecessary packages
+echo -n "Removing unnecessary packages"
+yum -C -y remove linux-firmware
 echo .
 
 # generalization
