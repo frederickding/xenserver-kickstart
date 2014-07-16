@@ -63,6 +63,7 @@ yum-plugin-fastestmirror
 -fprintd-pam
 -wireless-tools
 -NetworkManager
+-linux-firmware
 %end
 
 %post --log=/root/ks-post.log
