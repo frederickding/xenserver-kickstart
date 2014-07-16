@@ -102,6 +102,11 @@ wget -O /opt/domu-hostname.sh https://github.com/frederickding/xenserver-kicksta
 chmod +x /opt/domu-hostname.sh
 echo .
 
+# generalization
+echo -n "Generalizing"
+rm -f /etc/ssh/ssh_host_*
+echo .
+
 # fix boot for older pygrub/XenServer
 # you should comment out this entire section if on XenServer Creedence/Xen 4.4
 echo -n "Fixing boot"
