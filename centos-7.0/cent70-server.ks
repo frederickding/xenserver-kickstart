@@ -62,8 +62,8 @@ yum-plugin-fastestmirror
 -NetworkManager
 %end
 
-%post --erroronfail
-#!/bin/sh
+%post --log=/root/ks-post.log
+
 echo -n "Network fixes"
 # initscripts don't like this file to be missing.
 cat > /etc/sysconfig/network << EOF
