@@ -101,6 +101,10 @@ cat > /etc/hosts << EOF
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
 EOF
+echo -n "."
+
+# since NetworkManager is disabled, need to enable normal networking
+chkconfig network on
 echo .
 
 # utility script
