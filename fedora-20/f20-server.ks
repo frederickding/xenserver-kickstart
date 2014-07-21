@@ -66,11 +66,72 @@ net-tools
 %end
 
 # Copy grub.cfg to a backup and then make adaptations for buggy pygrub
-%post
+%post --log=/root/ks-post.log
+
+echo -n "Network fixes"
+# initscripts don't like this file to be missing.
+cat > /etc/sysconfig/network << EOF
+NETWORKING=yes
+NOZEROCONF=yes
+EOF
+echo -n "."
+
+# For cloud images, 'eth0' _is_ the predictable device name, since
+# we don't want to be tied to specific virtual (!) hardware
+rm -f /etc/udev/rules.d/70*
+ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+echo -n "."
+
+# simple eth0 config, again not hard-coded to the build hardware
+cat > /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF
+DEVICE="eth0"
+BOOTPROTO="dhcp"
+ONBOOT="yes"
+TYPE="Ethernet"
+PERSISTENT_DHCLIENT="yes"
+EOF
+echo -n "."
+
+# generic localhost names
+cat > /etc/hosts << EOF
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+EOF
+echo -n "."
+
+# since NetworkManager is disabled, need to enable normal networking
+chkconfig network on
+echo .
+
+# utility script
+echo -n "Utility scripts"
+echo "== Utility scripts ==" >> /root/ks-post.debug.log
+wget -O /opt/domu-hostname.sh https://github.com/frederickding/xenserver-kickstart/raw/develop/opt/domu-hostname.sh 2>> /root/ks-post.debug.log
+chmod +x /opt/domu-hostname.sh
+echo .
+
+# remove unnecessary packages
+echo -n "Removing unnecessary packages"
+echo "== Removing unnecessary packages ==" >> /root/ks-post.debug.log
+yum -C -y remove linux-firmware >> /root/ks-post.debug.log 2&>1
+echo .
+
+# generalization
+echo -n "Generalizing"
+rm -f /etc/ssh/ssh_host_*
+echo .
+
+# fix boot for older pygrub/XenServer
+# you should comment out this entire section if on XenServer Creedence/Xen 4.4
+echo -n "Fixing boot"
+echo "== GRUB fixes ==" >> /root/ks-post.debug.log
 cp /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
 cp /etc/default/grub /etc/default/grub.bak
 cp --no-preserve=mode /etc/grub.d/00_header /etc/grub.d/00_header.bak
 sed -i 's/GRUB_DEFAULT=saved/GRUB_DEFAULT=0/' /etc/default/grub
 sed -i 's/default="\\${next_entry}"/default="0"/' /etc/grub.d/00_header
-grub2-mkconfig -o /boot/grub2/grub.cfg
+echo -n "."
+grub2-mkconfig -o /boot/grub2/grub.cfg >> /root/ks-post.debug.log 2&>1
+echo .
 %end
