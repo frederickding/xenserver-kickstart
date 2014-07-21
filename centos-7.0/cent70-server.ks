@@ -77,13 +77,13 @@ cat > /etc/sysconfig/network << EOF
 NETWORKING=yes
 NOZEROCONF=yes
 EOF
-echo .
+echo -n "."
 
 # For cloud images, 'eth0' _is_ the predictable device name, since
 # we don't want to be tied to specific virtual (!) hardware
 rm -f /etc/udev/rules.d/70*
 ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
-echo .
+echo -n "."
 
 # simple eth0 config, again not hard-coded to the build hardware
 cat > /etc/sysconfig/network-scripts/ifcfg-eth0 << EOF
@@ -93,7 +93,7 @@ ONBOOT="yes"
 TYPE="Ethernet"
 PERSISTENT_DHCLIENT="yes"
 EOF
-echo .
+echo -n "."
 
 # generic localhost names
 cat > /etc/hosts << EOF
@@ -105,13 +105,15 @@ echo .
 
 # utility script
 echo -n "Utility scripts"
-wget -O /opt/domu-hostname.sh https://github.com/frederickding/xenserver-kickstart/raw/develop/opt/domu-hostname.sh
+echo "== Utility scripts ==" >> /root/ks-post.debug.log
+wget -O /opt/domu-hostname.sh https://github.com/frederickding/xenserver-kickstart/raw/develop/opt/domu-hostname.sh 2>> /root/ks-post.debug.log
 chmod +x /opt/domu-hostname.sh
 echo .
 
 # remove unnecessary packages
 echo -n "Removing unnecessary packages"
-yum -C -y remove linux-firmware
+echo "== Removing unnecessary packages ==" >> /root/ks-post.debug.log
+yum -C -y remove linux-firmware >> /root/ks-post.debug.log 2&>1
 echo .
 
 # generalization
@@ -122,6 +124,7 @@ echo .
 # fix boot for older pygrub/XenServer
 # you should comment out this entire section if on XenServer Creedence/Xen 4.4
 echo -n "Fixing boot"
+echo "== GRUB fixes ==" >> /root/ks-post.debug.log
 cp /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
 cp /etc/default/grub /etc/default/grub.bak
 cp --no-preserve=mode /etc/grub.d/00_header /etc/grub.d/00_header.bak
@@ -131,7 +134,7 @@ echo -n "."
 cp --no-preserve=mode /etc/grub.d/10_linux /etc/grub.d/10_linux.bak
 sed -i 's/${sixteenbit}//' /etc/grub.d/10_linux
 echo -n "."
-grub2-mkconfig -o /boot/grub2/grub.cfg
+grub2-mkconfig -o /boot/grub2/grub.cfg >> /root/ks-post.debug.log 2&>1
 echo .
 
 %end
