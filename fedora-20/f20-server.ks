@@ -61,6 +61,8 @@ net-tools
 -dracut-config-rescue
 -fprintd-pam
 -wireless-tools
+-NetworkManager
+-NetworkManager-glib
 %end
 
 # Copy grub.cfg to a backup and then make adaptations for buggy pygrub
