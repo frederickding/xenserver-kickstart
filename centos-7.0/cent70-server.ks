@@ -1,5 +1,5 @@
 # CentOS 7.0 kickstart for XenServer
-# branch: develop
+# branch: master
 ##########################################
 
 # Install, not upgrade
