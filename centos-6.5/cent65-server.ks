@@ -1,5 +1,5 @@
-# Fedora 20 Server kickstart for XenServer
-# branch: master (version 0.1)
+# CentOS 6.5 kickstart for XenServer
+# branch: master
 ##########################################
 
 # Install, not upgrade
@@ -50,24 +50,12 @@ halt
 
 # Minimal package set
 %packages --excludedocs
-@standard
 man
 vim
 deltarpm
 yum-plugin-fastestmirror
-realmd
 net-tools
 -dracut-config-rescue
 -fprintd-pam
 -wireless-tools
-%end
-
-# Copy grub.cfg to a backup and then make adaptations for buggy pygrub
-%post
-cp /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
-cp /etc/default/grub /etc/default/grub.bak
-cp --no-preserve=mode /etc/grub.d/00_header /etc/grub.d/00_header.bak
-sed -i 's/GRUB_DEFAULT=saved/GRUB_DEFAULT=0/' /etc/default/grub
-sed -i 's/default="\\${next_entry}"/default="0"/' /etc/grub.d/00_header
-grub2-mkconfig -o /boot/grub2/grub.cfg
 %end
