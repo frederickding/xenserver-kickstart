@@ -62,6 +62,7 @@ yum-plugin-fastestmirror
 dracut-config-generic
 -dracut-config-rescue
 -plymouth
+-@hardware-support
 -fprintd-pam
 -wireless-tools
 -iprutils
