@@ -52,18 +52,18 @@ halt
 
 # Minimal package set
 %packages --excludedocs
-@standard
-man
-vim
-deltarpm
+
+# as of Fedora 21, we build a Fedora Server-like image rather than a 
+# Fedora Cloud image, since newer guests should be PVHVM rather than PV
+@^server-product-environment
+
 yum-plugin-fastestmirror
-realmd
-net-tools
+dracut-config-generic
 -dracut-config-rescue
+-plymouth
 -fprintd-pam
 -wireless-tools
--NetworkManager
--NetworkManager-glib
+-iprutils
 %end
 
 # Copy grub.cfg to a backup and then make adaptations for buggy pygrub
@@ -101,9 +101,6 @@ cat > /etc/hosts << EOF
 EOF
 echo -n "."
 
-# since NetworkManager is disabled, need to enable normal networking
-chkconfig network on
-echo .
 
 # utility script
 echo -n "Utility scripts"
