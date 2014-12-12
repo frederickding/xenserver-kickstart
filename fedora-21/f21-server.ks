@@ -7,7 +7,8 @@ install
 
 # Install from a friendly mirror and add updates
 url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-21&arch=$basearch
-repo --name=updates
+# repo --name=fedora --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-$releasever&arch=$basearch
+repo --name=updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f$releasever&arch=$basearch
 
 # Language and keyboard setup
 lang en_US.UTF-8
@@ -101,6 +102,11 @@ cat > /etc/hosts << EOF
 EOF
 echo -n "."
 
+# Because memory is scarce resource in most cloud/virt environments,
+# and because this impedes forensics, we are differing from the Fedora
+# default of having /tmp on tmpfs.
+echo "Disabling tmpfs for /tmp."
+systemctl mask tmp.mount
 
 # utility script
 echo -n "Utility scripts"
@@ -131,5 +137,19 @@ sed -i 's/GRUB_DEFAULT=saved/GRUB_DEFAULT=0/' /etc/default/grub
 sed -i 's/default="\\${next_entry}"/default="0"/' /etc/grub.d/00_header
 echo -n "."
 grub2-mkconfig -o /boot/grub2/grub.cfg >> /root/ks-post.debug.log 2&>1
+echo .
+
+echo -n "Cleaning old yum repodata"
+echo "== yum clean-up ==" >> /root/ks-post.debug.log
+yum history new >> /root/ks-post.debug.log 2&>1
+yum clean all >> /root/ks-post.debug.log 2&>1
+truncate -c -s 0 /var/log/yum.log
+echo .
+
+echo -n "Importing RPM GPG key"
+echo "== RPM GPG key ==" >> /root/ks-post.debug.log
+releasever=$(rpm -q --qf '%{version}\n' fedora-release)
+basearch=$(uname -i)
+rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch >> /root/ks-post.debug.log 2&>1
 echo .
 %end
