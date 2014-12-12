@@ -62,7 +62,6 @@ yum-plugin-fastestmirror
 dracut-config-generic
 -dracut-config-rescue
 -plymouth
--@hardware-support
 -fprintd-pam
 -wireless-tools
 -iprutils
@@ -120,6 +119,8 @@ echo .
 echo -n "Removing unnecessary packages"
 echo "== Removing unnecessary packages ==" >> /root/ks-post.debug.log
 yum -C -y remove linux-firmware >> /root/ks-post.debug.log 2&>1
+yum -C -y groups mark convert >> /root/ks-post.debug.log 2&>1
+yum -C -y groups remove hardware-support >> /root/ks-post.debug.log 2&>1
 echo .
 
 # generalization
