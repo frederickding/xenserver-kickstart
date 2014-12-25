@@ -1,4 +1,4 @@
-# Fedora 21 Server kickstart for XenServer
+# Fedora 21 Cloud Base kickstart for XenServer
 # branch: develop
 ##########################################
 
@@ -14,13 +14,8 @@ repo --name=updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?rep
 lang en_US.UTF-8
 keyboard us
 
-# Configure networking without IPv6, firewall off
-
-# for STATIC IP: uncomment and configure
-# network --onboot=yes --device=eth0 --bootproto=static --ip=192.168.###.### --netmask=255.255.255.0 --gateway=192.168.###.### --nameserver=###.###.###.### --noipv6 --hostname=$$$
-
-# for DHCP:
-network --bootproto=dhcp --device=eth0 --onboot=on
+# Configure networking without IPv6, firewall off, DHCP
+network --bootproto=dhcp --device=link --activate --onboot=on
 
 firewall --disabled
 
@@ -29,13 +24,15 @@ timezone --utc Etc/UTC
 
 # Authentication
 rootpw --lock --iscrypted locked
-user --name=fedora --password=Asdfqwerty --plaintext --gecos="Fedora User" --shell=/bin/bash --groups=user,wheel
-# if you want to preset the root password in a public kickstart file, use SHA512crypt e.g.
-# rootpw --iscrypted $6$9dC4m770Q1o$FCOvPxuqc1B22HM21M5WuUfhkiQntzMuAV7MY0qfVcvhwNQ2L86PcnDWfjDd12IFxWtRiTuvO/niB0Q3Xpf2I.
-authconfig --enableshadow --passalgo=sha512
+
+# User will be defined by cloud-init
+user --name=none
 
 # SELinux enabled
 selinux --enforcing
+
+# Enable cloud image services
+services --enabled=network,sshd,rsyslog,cloud-init,cloud-init-local,cloud-config,cloud-final
 
 # Disable anything graphical
 skipx
@@ -43,10 +40,10 @@ text
 
 # Setup the disk
 zerombr
-clearpart --all --drives=xvda
-part /boot --fstype=ext3 --size=500 --asprimary
-part / --fstype=ext4 --grow --size=1024 --asprimary
-bootloader --timeout=5 --driveorder=xvda --append="console=hvc0"
+clearpart --all
+part /boot --fstype=ext3 --size=500
+part / --fstype=ext4 --grow --size=3000
+bootloader --timeout=10 --driveorder=xvda --append="no_timer_check console=hvc0" --extlinux
 
 # Shutdown when the kickstart is done
 halt
@@ -54,21 +51,35 @@ halt
 # Minimal package set
 %packages --excludedocs
 
-# as of Fedora 21, we build a Fedora Server-like image rather than a 
-# Fedora Cloud image, since newer guests should be PVHVM rather than PV
-@^server-product-environment
-
+# as of Fedora 21, we build a Fedora Cloud product
+kernel-core
+@^cloud-server-environment
+deltarpm
 yum-plugin-fastestmirror
-dracut-config-generic
 -dracut-config-rescue
+-biosdevname
 -plymouth
+-NetworkManager
+-iprutils
+-kbd
+-uboot-tools
+-kernel
+-grub2
 -fprintd-pam
 -wireless-tools
--iprutils
 %end
 
 # Copy grub.cfg to a backup and then make adaptations for buggy pygrub
 %post --log=/root/ks-post.log
+
+# remove the user anaconda forces us to make
+userdel -r none
+
+# setup systemd to boot to the right runlevel
+echo -n "Setting default runlevel to multiuser text mode"
+rm -f /etc/systemd/system/default.target
+ln -s /lib/systemd/system/multi-user.target /etc/systemd/system/default.target
+echo .
 
 echo -n "Network fixes"
 # initscripts don't like this file to be missing.
@@ -81,7 +92,7 @@ echo -n "."
 # For cloud images, 'eth0' _is_ the predictable device name, since
 # we don't want to be tied to specific virtual (!) hardware
 rm -f /etc/udev/rules.d/70*
-ln -s /dev/null /etc/udev/rules.d/80-net-name-slot.rules
+ln -s /dev/null /etc/udev/rules.d/80-net-setup-link.rules
 echo -n "."
 
 # simple eth0 config, again not hard-coded to the build hardware
@@ -100,7 +111,7 @@ cat > /etc/hosts << EOF
 ::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
 
 EOF
-echo -n "."
+echo "."
 
 # Because memory is scarce resource in most cloud/virt environments,
 # and because this impedes forensics, we are differing from the Fedora
@@ -108,12 +119,8 @@ echo -n "."
 echo "Disabling tmpfs for /tmp."
 systemctl mask tmp.mount >> /root/ks-post.debug.log 2&>1
 
-# utility script
-echo -n "Utility scripts"
-echo "== Utility scripts ==" >> /root/ks-post.debug.log
-wget -O /opt/domu-hostname.sh https://github.com/frederickding/xenserver-kickstart/raw/develop/opt/domu-hostname.sh 2>> /root/ks-post.debug.log
-chmod +x /opt/domu-hostname.sh
-echo .
+# make sure firstboot doesn't start
+echo "RUN_FIRSTBOOT=NO" > /etc/sysconfig/firstboot
 
 # remove unnecessary packages
 echo -n "Removing unnecessary packages"
@@ -123,23 +130,28 @@ yum -C -y groups mark convert >> /root/ks-post.debug.log 2&>1
 yum -C -y groups remove hardware-support >> /root/ks-post.debug.log 2&>1
 echo .
 
+# Remove firewalld
+echo -n "- removing firewalld"
+yum -C -y remove "firewalld*" --setopt="clean_requirements_on_remove=1" >> /root/ks-post.debug.log 2&>1
+echo .
+
+# From spin-kickstarts fedora-cloud-base.ks
+echo -n "Getty fixes"
+# although we want console output going to the serial console, we don't
+# actually have the opportunity to login there (actually, this isn't quite 
+# true on Xen -- `xl console`).
+# we don't really need to auto-spawn _any_ gettys.
+sed -i '/^#NAutoVTs=.*/ a\
+NAutoVTs=0' /etc/systemd/logind.conf
+echo .
+
 # generalization
 echo -n "Generalizing"
 rm -f /etc/ssh/ssh_host_*
+rm -f /var/lib/random-seed
 echo .
 
-# fix boot for older pygrub/XenServer
-# you should comment out this entire section if on XenServer Creedence/Xen 4.4
-echo -n "Fixing boot"
-echo "== GRUB fixes ==" >> /root/ks-post.debug.log
-cp /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
-cp /etc/default/grub /etc/default/grub.bak
-cp --no-preserve=mode /etc/grub.d/00_header /etc/grub.d/00_header.bak
-sed -i 's/GRUB_DEFAULT=saved/GRUB_DEFAULT=0/' /etc/default/grub
-sed -i 's/default="\\${next_entry}"/default="0"/' /etc/grub.d/00_header
-echo -n "."
-grub2-mkconfig -o /boot/grub2/grub.cfg >> /root/ks-post.debug.log 2&>1
-echo .
+# GRUB fixes not needed!
 
 echo -n "Cleaning old yum repodata"
 echo "== yum clean-up ==" >> /root/ks-post.debug.log
@@ -154,4 +166,28 @@ releasever=$(rpm -q --qf '%{version}\n' fedora-release)
 basearch=$(uname -i)
 rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch >> /root/ks-post.debug.log 2&>1
 echo .
+
+echo "Packages within this cloud image:" >> /root/installed-software.log
+echo "-----------------------------------------------------------------------" >> /root/installed-software.log
+rpm -qa >> /root/installed-software.log
+echo "-----------------------------------------------------------------------" >> /root/installed-software.log
+# Note that running rpm recreates the rpm db files which aren't needed/wanted
+rm -f /var/lib/rpm/__db*
+
+echo -n "Fixing SELinux contexts"
+touch /var/log/cron
+touch /var/log/boot.log
+mkdir -p /var/cache/yum
+chattr -i /boot/extlinux/ldlinux.sys >> /root/ks-post.debug.log
+/usr/sbin/fixfiles -R -a restore >> /root/ks-post.debug.log
+chattr +i /boot/extlinux/ldlinux.sys >> /root/ks-post.debug.log
+echo .
+
+echo -n "Zeroing out empty space"
+# This forces the filesystem to reclaim space from deleted files
+dd bs=1M if=/dev/zero of=/var/tmp/zeros >> /root/ks-post.debug.log 2&>1 || :
+rm -f /var/tmp/zeros
+echo "(Don't worry -- that out-of-space error was expected.)" >> /root/ks-post.debug.log
+echo .
+
 %end
