@@ -39,19 +39,14 @@ skipx
 text
 
 # Setup the disk
-clearpart --none
-part biosboot --fstype=biosboot --size=1
+zerombr
+clearpart --all
 part /boot --fstype=ext3 --size=500
 part / --fstype=ext4 --grow --size=3000
-bootloader --timeout=50 --driveorder=xvda --append="no_timer_check console=hvc0" --extlinux
+bootloader --timeout=10 --driveorder=xvda --append="no_timer_check console=hvc0" --extlinux
 
 # Shutdown when the kickstart is done
 halt
-
-# Set up GPT partitions
-%pre
-parted -s /dev/xvda mklabel gpt
-%end
 
 # Minimal package set
 %packages --excludedocs
