@@ -51,6 +51,7 @@ halt
 # Set up GPT partitions
 %pre
 parted -s /dev/xvda mklabel gpt
+%end
 
 # Minimal package set
 %packages --excludedocs
