@@ -106,7 +106,7 @@ echo -n "."
 # and because this impedes forensics, we are differing from the Fedora
 # default of having /tmp on tmpfs.
 echo "Disabling tmpfs for /tmp."
-systemctl mask tmp.mount
+systemctl mask tmp.mount >> /root/ks-post.debug.log 2&>1
 
 # utility script
 echo -n "Utility scripts"

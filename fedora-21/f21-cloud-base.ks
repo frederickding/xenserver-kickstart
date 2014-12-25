@@ -117,7 +117,7 @@ echo "."
 # and because this impedes forensics, we are differing from the Fedora
 # default of having /tmp on tmpfs.
 echo "Disabling tmpfs for /tmp."
-systemctl mask tmp.mount
+systemctl mask tmp.mount >> /root/ks-post.debug.log 2&>1
 
 # make sure firstboot doesn't start
 echo "RUN_FIRSTBOOT=NO" > /etc/sysconfig/firstboot
@@ -191,9 +191,9 @@ echo .
 
 echo -n "Zeroing out empty space"
 # This forces the filesystem to reclaim space from deleted files
-dd bs=1M if=/dev/zero of=/var/tmp/zeros || :
+dd bs=1M if=/dev/zero of=/var/tmp/zeros >> /root/ks-post.debug.log 2&>1 || :
 rm -f /var/tmp/zeros
+echo "(Don't worry -- that out-of-space error was expected.)" >> /root/ks-post.debug.log
 echo .
-echo "(Don't worry -- that out-of-space error was expected.)"
 
 %end
