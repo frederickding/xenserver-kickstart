@@ -127,13 +127,6 @@ systemctl mask tmp.mount
 # make sure firstboot doesn't start
 echo "RUN_FIRSTBOOT=NO" > /etc/sysconfig/firstboot
 
-# utility script
-echo -n "Utility scripts"
-echo "== Utility scripts ==" >> /root/ks-post.debug.log
-wget -O /opt/domu-hostname.sh https://rawgit.com/frederickding/xenserver-kickstart/develop/opt/domu-hostname.sh 2>> /root/ks-post.debug.log
-chmod +x /opt/domu-hostname.sh
-echo .
-
 # remove unnecessary packages
 echo -n "Removing unnecessary packages"
 echo "== Removing unnecessary packages ==" >> /root/ks-post.debug.log
