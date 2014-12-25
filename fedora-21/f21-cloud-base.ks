@@ -58,7 +58,7 @@ parted -s /dev/xvda mklabel gpt
 
 # as of Fedora 21, we build a Fedora Cloud product
 kernel-core
-@^cloud-product-environment
+@^cloud-server-environment
 deltarpm
 yum-plugin-fastestmirror
 -dracut-config-rescue
