@@ -6,7 +6,7 @@
 install
 
 # Install from a friendly mirror and add updates
-url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-21&arch=$basearch
+url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-install-21&arch=$basearch
 # repo --name=fedora --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-$releasever&arch=$basearch
 repo --name=updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f$releasever&arch=$basearch
 
