@@ -55,7 +55,6 @@ halt
 kernel-core
 @^cloud-server-environment
 deltarpm
-yum-plugin-fastestmirror
 -dracut-config-rescue
 -biosdevname
 -plymouth
