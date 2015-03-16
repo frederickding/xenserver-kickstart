@@ -6,7 +6,7 @@
 install
 
 # Install from a friendly mirror and add updates
-url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-21&arch=$basearch
+url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-cloud-21&arch=$basearch
 # repo --name=fedora --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-$releasever&arch=$basearch
 repo --name=updates --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=updates-released-f$releasever&arch=$basearch
 
@@ -55,7 +55,6 @@ halt
 kernel-core
 @^cloud-server-environment
 deltarpm
-yum-plugin-fastestmirror
 -dracut-config-rescue
 -biosdevname
 -plymouth
@@ -133,6 +132,12 @@ echo .
 # Remove firewalld
 echo -n "- removing firewalld"
 yum -C -y remove "firewalld*" --setopt="clean_requirements_on_remove=1" >> /root/ks-post.debug.log 2&>1
+echo .
+
+# Another one needed at install time but not after that, and it pulls
+# in some unneeded deps (like, newt and slang)
+echo -n "- removing authconfig"
+yum -C -y remove authconfig --setopt="clean_requirements_on_remove=1" >> /root/ks-post.debug.log 2&>1
 echo .
 
 # From spin-kickstarts fedora-cloud-base.ks
