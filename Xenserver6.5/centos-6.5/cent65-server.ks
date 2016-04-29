@@ -1,13 +1,13 @@
 # CentOS 6.5 kickstart for XenServer
-# branch: develop
+# branch: master
 ##########################################
 
 # Install, not upgrade
 install
 
 # Install from a friendly mirror and add updates
-url --url http://mirrors.mit.edu/centos/6.5/os/x86_64/
-repo --name=centos-updates --mirrorlist=http://mirrorlist.centos.org/?release=6.5&arch=x86_64&repo=updates
+url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-20&arch=$basearch
+repo --name=updates
 
 # Language and keyboard setup
 lang en_US.UTF-8
@@ -50,8 +50,6 @@ halt
 
 # Minimal package set
 %packages --excludedocs
-@server-platform
-@network-file-system-client
 man
 vim
 deltarpm

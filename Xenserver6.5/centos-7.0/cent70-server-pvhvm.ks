@@ -1,5 +1,5 @@
 # CentOS 7.0 kickstart for XenServer (PVHVM MBR)
-# branch: develop
+# branch: master
 ##########################################
 
 # Install, not upgrade
