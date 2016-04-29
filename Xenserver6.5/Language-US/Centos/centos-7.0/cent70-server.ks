@@ -1,13 +1,13 @@
-# CentOS 7.0 kickstart for XenServer (PVHVM MBR)
-# branch: master
+# CentOS 7.0 kickstart for XenServer
+# branch: develop
 ##########################################
 
 # Install, not upgrade
 install
 
 # Install from a friendly mirror and add updates
-url --url http://mirror.rackspace.com/CentOS/7.0.1406/os/x86_64/
-repo --name=centos-updates --mirrorlist=http://mirrorlist.centos.org/?release=7.0.1406&arch=x86_64&repo=updates
+url --mirrorlist http://mirrorlist.centos.org/?release=7&arch=x86_64&repo=os
+repo --name=centos-updates --mirrorlist=http://mirrorlist.centos.org/?release=7&arch=x86_64&repo=updates
 
 # Language and keyboard setup
 lang en_US.UTF-8
@@ -45,10 +45,10 @@ eula --agreed
 
 # Setup the disk
 zerombr
-clearpart --all
-part /boot --fstype=ext3 --size=256 --asprimary
+clearpart --all --drives=xvda
+part /boot --fstype=ext3 --size=500 --asprimary
 part / --fstype=ext4 --grow --size=1024 --asprimary
-bootloader --timeout=5 --location=mbr
+bootloader --timeout=5 --driveorder=xvda --append="console=hvc0"
 
 # Shutdown when the kickstart is done
 halt
@@ -66,14 +66,10 @@ dracut-config-generic
 -wireless-tools
 -NetworkManager
 -NetworkManager-tui
+-*-firmware
 %end
 
 %post --log=/root/ks-post.log
-
-echo -n "/etc/fstab fixes"
-# update fstab for the root partition
-perl -pi -e 's/(defaults)/$1,noatime,nodiratime/' /etc/fstab
-echo .
 
 echo -n "Network fixes"
 # initscripts don't like this file to be missing.
@@ -118,8 +114,31 @@ wget -O /opt/domu-hostname.sh https://github.com/frederickding/xenserver-kicksta
 chmod +x /opt/domu-hostname.sh
 echo .
 
+# remove unnecessary packages
+echo -n "Removing unnecessary packages"
+echo "== Removing unnecessary packages ==" >> /root/ks-post.debug.log
+yum -C -y remove linux-firmware >> /root/ks-post.debug.log 2&>1
+echo .
+
 # generalization
 echo -n "Generalizing"
 rm -f /etc/ssh/ssh_host_*
 echo .
+
+# fix boot for older pygrub/XenServer
+# you should comment out this entire section if on XenServer Creedence/Xen 4.4
+echo -n "Fixing boot"
+echo "== GRUB fixes ==" >> /root/ks-post.debug.log
+cp /boot/grub2/grub.cfg /boot/grub2/grub.cfg.bak
+cp /etc/default/grub /etc/default/grub.bak
+cp --no-preserve=mode /etc/grub.d/00_header /etc/grub.d/00_header.bak
+sed -i 's/GRUB_DEFAULT=saved/GRUB_DEFAULT=0/' /etc/default/grub
+sed -i 's/default="\\${next_entry}"/default="0"/' /etc/grub.d/00_header
+echo -n "."
+cp --no-preserve=mode /etc/grub.d/10_linux /etc/grub.d/10_linux.bak
+sed -i 's/${sixteenbit}//' /etc/grub.d/10_linux
+echo -n "."
+grub2-mkconfig -o /boot/grub2/grub.cfg >> /root/ks-post.debug.log 2&>1
+echo .
+
 %end

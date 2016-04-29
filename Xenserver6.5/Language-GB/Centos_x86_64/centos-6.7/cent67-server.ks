@@ -1,17 +1,17 @@
-# CentOS 6.5 kickstart for XenServer
-# branch: master
+# CentOS 6.7 kickstart for XenServer
+# branch: develop
 ##########################################
 
 # Install, not upgrade
 install
 
 # Install from a friendly mirror and add updates
-url --mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=fedora-20&arch=$basearch
-repo --name=updates
+url --url http://mirrors.ukfast.co.uk/sites/ftp.centos.org/6.7/isos/x86_64/
+repo --name=centos-updates --mirrorlist=http://mirrorlist.centos.org/?release=6.7&arch=x86_64&repo=updates
 
 # Language and keyboard setup
-lang en_US.UTF-8
-keyboard us
+lang en_GB.UTF-8
+keyboard --vckeymap=uk --xlayouts='gb'
 
 # Configure networking without IPv6, firewall off
 
@@ -21,10 +21,10 @@ keyboard us
 # for DHCP:
 network --bootproto=dhcp --device=eth0 --onboot=on
 
-firewall --disabled
+firewall --enabled --ssh
 
 # Set timezone
-timezone --utc Etc/UTC
+timezone Europe/London --isUtc
 
 # Authentication
 rootpw Asdfqwerty
@@ -42,7 +42,7 @@ text
 # Setup the disk
 zerombr
 clearpart --all --drives=xvda
-part / --fstype=ext3 --grow --size=1024 --asprimary
+part / --fstype=ext4 --grow --size=1024 --asprimary
 bootloader --location=partition --timeout=5 --driveorder=xvda --append="console=hvc0"
 
 # Shutdown when the kickstart is done
@@ -50,12 +50,13 @@ halt
 
 # Minimal package set
 %packages --excludedocs
+@server-platform
+@network-file-system-client
 man
+wget
+nano
 vim
 deltarpm
 yum-plugin-fastestmirror
 net-tools
--dracut-config-rescue
--fprintd-pam
--wireless-tools
 %end
